@@ -35,7 +35,7 @@ server {
     }
 
     location ~* \.(js|json|css|svg|png|jpg|ico)\$ {
-        expires 7d;
+        expires 1h;
         add_header Cache-Control "public";
     }
 

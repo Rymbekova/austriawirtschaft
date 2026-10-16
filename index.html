@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Austria Wirtschaft</title>
-<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=202610161757">
 <meta name="description" content="Austria's economy by federal state: GDP per person, income and growth, from official statistics.">
 <meta property="og:title" content="Austria Wirtschaft">
 <meta property="og:description" content="Austria's economy by federal state, visualised from official statistics.">
@@ -276,7 +276,7 @@ footer li { margin: 3px 0; }
 </div>
 <div id="tip" role="status" aria-live="polite"></div>
 
-<script src="data.js"></script>
+<script src="data.js?v=202610161757"></script>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script>
 (function () {
@@ -518,6 +518,6 @@ footer li { margin: 3px 0; }
     .catch(() => { document.getElementById("map").innerHTML = '<p class="note">The map could not be loaded.</p>'; });
 })();
 </script>
-<script src="companies.js"></script>
+<script src="companies.js?v=202610161757"></script>
 </body>
 </html>
