@@ -1,0 +1,334 @@
+{
+ "total": 100992,
+ "placed": 99890,
+ "foreign": 594,
+ "noAddress": 496,
+ "badPostcode": 0,
+ "unplaced": 12,
+ "laender": {
+  "Wien": 28608,
+  "Niederösterreich": 16135,
+  "Oberösterreich": 13021,
+  "Steiermark": 12009,
+  "Tirol": 9466,
+  "Salzburg": 7466,
+  "Kärnten": 5971,
+  "Vorarlberg": 4293,
+  "Burgenland": 2921
+ },
+ "landDetail": {
+  "Burgenland": {
+   "n": 2921,
+   "sectors": [
+    [
+     "Retail trade",
+     888
+    ],
+    [
+     "Restaurants & catering",
+     394
+    ],
+    [
+     "Agriculture",
+     241
+    ],
+    [
+     "Land transport",
+     201
+    ],
+    [
+     "Hotels & accommodation",
+     146
+    ]
+   ]
+  },
+  "Kärnten": {
+   "n": 5971,
+   "sectors": [
+    [
+     "Retail trade",
+     1680
+    ],
+    [
+     "Restaurants & catering",
+     925
+    ],
+    [
+     "Hotels & accommodation",
+     587
+    ],
+    [
+     "Land transport",
+     387
+    ],
+    [
+     "Energy supply",
+     379
+    ]
+   ]
+  },
+  "Niederösterreich": {
+   "n": 16135,
+   "sectors": [
+    [
+     "Retail trade",
+     5252
+    ],
+    [
+     "Restaurants & catering",
+     1817
+    ],
+    [
+     "Agriculture",
+     1219
+    ],
+    [
+     "Land transport",
+     1082
+    ],
+    [
+     "Building & facility management",
+     881
+    ]
+   ]
+  },
+  "Oberösterreich": {
+   "n": 13021,
+   "sectors": [
+    [
+     "Retail trade",
+     4359
+    ],
+    [
+     "Restaurants & catering",
+     1574
+    ],
+    [
+     "Land transport",
+     798
+    ],
+    [
+     "Personal services (laundry, car wash etc.)",
+     586
+    ],
+    [
+     "Fabricated metal products",
+     582
+    ]
+   ]
+  },
+  "Salzburg": {
+   "n": 7466,
+   "sectors": [
+    [
+     "Retail trade",
+     2063
+    ],
+    [
+     "Hotels & accommodation",
+     1329
+    ],
+    [
+     "Restaurants & catering",
+     1102
+    ],
+    [
+     "Land transport",
+     542
+    ],
+    [
+     "Building & facility management",
+     305
+    ]
+   ]
+  },
+  "Steiermark": {
+   "n": 12009,
+   "sectors": [
+    [
+     "Retail trade",
+     3673
+    ],
+    [
+     "Restaurants & catering",
+     1590
+    ],
+    [
+     "Land transport",
+     1004
+    ],
+    [
+     "Energy supply",
+     734
+    ],
+    [
+     "Hotels & accommodation",
+     685
+    ]
+   ]
+  },
+  "Tirol": {
+   "n": 9466,
+   "sectors": [
+    [
+     "Retail trade",
+     2488
+    ],
+    [
+     "Hotels & accommodation",
+     2044
+    ],
+    [
+     "Restaurants & catering",
+     1539
+    ],
+    [
+     "Land transport",
+     725
+    ],
+    [
+     "Building & facility management",
+     357
+    ]
+   ]
+  },
+  "Vorarlberg": {
+   "n": 4293,
+   "sectors": [
+    [
+     "Retail trade",
+     1344
+    ],
+    [
+     "Restaurants & catering",
+     564
+    ],
+    [
+     "Hotels & accommodation",
+     557
+    ],
+    [
+     "Land transport",
+     258
+    ],
+    [
+     "Fabricated metal products",
+     163
+    ]
+   ]
+  },
+  "Wien": {
+   "n": 28608,
+   "sectors": [
+    [
+     "Retail trade",
+     9528
+    ],
+    [
+     "Restaurants & catering",
+     6348
+    ],
+    [
+     "Land transport",
+     3389
+    ],
+    [
+     "Building & facility management",
+     2109
+    ],
+    [
+     "Personal services (laundry, car wash etc.)",
+     1967
+    ]
+   ]
+  }
+ },
+ "sectors": [
+  [
+   "Retail trade",
+   31275
+  ],
+  [
+   "Restaurants & catering",
+   15853
+  ],
+  [
+   "Land transport",
+   8386
+  ],
+  [
+   "Hotels & accommodation",
+   7057
+  ],
+  [
+   "Building & facility management",
+   5028
+  ],
+  [
+   "Personal services (laundry, car wash etc.)",
+   4884
+  ],
+  [
+   "Sports, entertainment & recreation",
+   3614
+  ],
+  [
+   "Energy supply",
+   3328
+  ],
+  [
+   "Agriculture",
+   2848
+  ],
+  [
+   "Healthcare / hospitals",
+   2586
+  ],
+  [
+   "Fabricated metal products",
+   2495
+  ],
+  [
+   "Food manufacturing",
+   2319
+  ]
+ ],
+ "legalForms": [
+  [
+   "Gesellschaft mit beschränkter Haftung",
+   49560
+  ],
+  [
+   "Einzelunternehmer",
+   21280
+  ],
+  [
+   "Kommanditgesellschaft",
+   18647
+  ],
+  [
+   "Offene Gesellschaft",
+   8979
+  ],
+  [
+   "Erwerbs- und Wirtschaftsgenossenschaft",
+   1004
+  ],
+  [
+   "Flexible Kapitalgesellschaft",
+   270
+  ]
+ ],
+ "match": {
+  "none": 12,
+  "vienna": 28605,
+  "plz": 3904,
+  "exact": 54659,
+  "partial": 10745,
+  "gemeinde": 1677,
+  "name": 24,
+  "plz3": 276
+ },
+ "geocoded": 89104,
+ "geocodedExact": 87833
+}

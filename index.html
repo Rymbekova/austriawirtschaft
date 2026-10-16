@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Austria Wirtschaft</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<meta name="description" content="Austria's economy by federal state: GDP per person, income and growth, from official statistics.">
+<meta property="og:title" content="Austria Wirtschaft">
+<meta property="og:description" content="Austria's economy by federal state, visualised from official statistics.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23256abf'/%3E%3Crect x='7' y='17' width='4' height='8' rx='1' fill='white'/%3E%3Crect x='14' y='11' width='4' height='14' rx='1' fill='white'/%3E%3Crect x='21' y='7' width='4' height='18' rx='1' fill='white'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --accent: #256abf;
+  --s1: #2a78d6;
+  --ref: #898781;
+  --good: #006300;
+  --bad: #d03b3b;
+  --q1: #cde2fb; --q2: #9ec5f4; --q3: #5598e7; --q4: #256abf; --q5: #104281;
+  --d-neg2: #e34948; --d-neg1: #f4b0ad; --d-mid: #e1e0d9; --d-pos1: #9ec5f4; --d-pos2: #256abf;
+  --wash: rgba(11,11,11,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --accent: #5598e7;
+    --s1: #3987e5; --ref: #898781; --good: #0ca30c; --bad: #e66767;
+    --q1: #184f95; --q2: #256abf; --q3: #3987e5; --q4: #6da7ec; --q5: #b7d3f6;
+    --d-neg2: #e66767; --d-neg1: #7d3634; --d-mid: #383835; --d-pos1: #1c5cab; --d-pos2: #6da7ec;
+    --wash: rgba(255,255,255,0.05);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10); --accent: #5598e7;
+  --s1: #3987e5; --ref: #898781; --good: #0ca30c; --bad: #e66767;
+  --q1: #184f95; --q2: #256abf; --q3: #3987e5; --q4: #6da7ec; --q5: #b7d3f6;
+  --d-neg2: #e66767; --d-neg1: #7d3634; --d-mid: #383835; --d-pos1: #1c5cab; --d-pos2: #6da7ec;
+  --wash: rgba(255,255,255,0.05);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0 8px; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: -0.01em; }
+.brand-mark { width: 26px; height: 26px; }
+.theme-btn {
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
+  border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer;
+}
+.theme-btn:hover { background: var(--wash); }
+.hero { padding: 40px 0 28px; }
+.hero h1 { font-size: clamp(32px, 5.5vw, 54px); line-height: 1.05; letter-spacing: -0.025em; margin: 0 0 14px; font-weight: 700; max-width: 18ch; }
+.hero p { color: var(--ink-2); font-size: 18px; max-width: 60ch; margin: 0; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 32px 0 8px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+.tile .k { font-size: 13px; color: var(--ink-2); }
+.tile .v { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; margin-top: 4px; }
+.tile .n { font-size: 13px; color: var(--muted); margin-top: 2px; }
+section.block { margin: 40px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+h2 { font-size: 24px; letter-spacing: -0.015em; margin: 0 0 4px; }
+.sub { color: var(--ink-2); margin: 0 0 18px; max-width: 70ch; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.tab {
+  border: 1px solid var(--border); background: transparent; color: var(--ink-2);
+  border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer;
+}
+.tab:hover { background: var(--wash); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.map-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; align-items: start; }
+#map svg { width: 100%; height: auto; display: block; }
+#map path { stroke: var(--surface); stroke-width: 1.5; cursor: pointer; transition: opacity .15s; }
+#map path:hover { opacity: .85; }
+#map path.sel { stroke: var(--ink); stroke-width: 2.5; }
+#map text { font-size: 11px; fill: var(--ink); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin-top: 10px; }
+.legend .sw { display: inline-flex; gap: 2px; }
+.legend .sw span { width: 26px; height: 10px; border-radius: 2px; display: block; }
+.rank { list-style: none; margin: 0; padding: 0; }
+.rank li { display: grid; grid-template-columns: 128px 1fr 64px; align-items: center; gap: 10px; padding: 5px 6px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.rank li:hover { background: var(--wash); }
+.rank li.sel { background: var(--wash); font-weight: 600; }
+.rank li.at { color: var(--ink-2); font-style: italic; }
+.rank .bar-track { position: relative; height: 12px; }
+.rank .bar { position: absolute; top: 0; height: 12px; border-radius: 0 4px 4px 0; }
+.rank .bar.neg { border-radius: 4px 0 0 4px; }
+.rank .zero { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--axis); }
+.rank .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+.detail { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--grid); font-size: 14px; color: var(--ink-2); }
+.detail strong { color: var(--ink); }
+.detail dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 8px 0 0; }
+.detail dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.chart .baseline { stroke: var(--axis); stroke-width: 1; }
+.chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.chart .lbl { font-size: 12px; fill: var(--ink-2); }
+.key { display: flex; gap: 16px; font-size: 13px; color: var(--ink-2); margin: 0 0 10px; flex-wrap: wrap; }
+.key i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
+select {
+  font: inherit; font-size: 14px; padding: 6px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+}
+#tip {
+  position: fixed; pointer-events: none; z-index: 10; opacity: 0; transition: opacity .08s;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 10px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  min-width: 140px;
+}
+#tip .t { font-weight: 600; margin-bottom: 2px; }
+#tip .r { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-2); }
+#tip .r b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+details.table { margin-top: 16px; font-size: 14px; }
+details.table summary { cursor: pointer; color: var(--accent); }
+.tbl-wrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink-2); font-weight: 600; font-size: 13px; }
+footer { color: var(--ink-2); font-size: 14px; padding: 24px 0 48px; border-top: 1px solid var(--grid); margin-top: 48px; }
+footer ul { padding-left: 18px; margin: 8px 0 16px; }
+footer li { margin: 3px 0; }
+.note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+/* companies map */
+.ctiles { margin: 0 0 18px; }
+.ctiles .v { font-size: 24px; }
+.clevels { font-size: 13px; color: var(--muted); margin-bottom: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.clevels span.on { color: var(--ink); font-weight: 600; }
+.clevels .sep { color: var(--axis); }
+.cgrid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 20px; align-items: start; }
+#cmap { height: 560px; border-radius: 12px; border: 1px solid var(--border); background: var(--page); }
+.leaflet-container { font: inherit; }
+.osm-tiles { filter: grayscale(0.85) contrast(0.9) brightness(1.05); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .osm-tiles { filter: grayscale(1) invert(1) brightness(0.85) contrast(0.9); } }
+:root[data-theme="dark"] .osm-tiles { filter: grayscale(1) invert(1) brightness(0.85) contrast(0.9); }
+.leaflet-container a { color: var(--accent); }
+.leaflet-control-attribution { font-size: 10px; }
+.clabel { background: none; border: none; text-align: center; white-space: nowrap; transform: translate(-50%, -50%); pointer-events: none;
+  font-size: 11px; line-height: 1.2; color: var(--ink); text-shadow: 0 0 3px var(--surface), 0 0 3px var(--surface), 0 0 2px var(--surface); }
+.clabel .nm { display: block; color: var(--ink-2); }
+.clabel b { font-weight: 650; }
+.clabel.big { font-size: 13px; }
+.cbubble { background: none; border: none; transform: translate(-50%, -50%); white-space: nowrap; font-size: 11px; font-weight: 650; color: #fff; pointer-events: none; }
+.legend .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--s1); display: inline-block; }
+.mutedtxt { color: var(--muted); }
+.legend .dot.grey { background: var(--muted); margin-left: 10px; }
+.legend .dot.hollow { background: transparent; border: 1.5px solid var(--s1); margin-left: 10px; }
+.cdl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 14px; margin: 8px 0 0; }
+.cdl dt { color: var(--muted); }
+.cdl dd { margin: 0; overflow-wrap: anywhere; }
+.cpanel { background: var(--page); border: 1px solid var(--border); border-radius: 12px; padding: 16px; max-height: 620px; overflow: auto; }
+.ccrumbs { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.ccrumbs a { text-decoration: none; }
+.cname { font-weight: 650; font-size: 18px; }
+.cnum { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 2px; }
+.cmeta { font-size: 13px; color: var(--ink-2); margin-bottom: 12px; }
+.cs-h { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 6px; }
+.secs, .gems, .clist { list-style: none; padding: 0; margin: 0; }
+.secs li { display: grid; grid-template-columns: 1fr 70px 50px; gap: 8px; align-items: center; font-size: 13px; padding: 3px 0; }
+.secs .sn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.secs .sb { height: 8px; }
+.secs .sb i { display: block; height: 8px; border-radius: 0 4px 4px 0; background: var(--s1); }
+.secs .sv { text-align: right; font-variant-numeric: tabular-nums; }
+.gems li { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; border-bottom: 1px solid var(--grid); }
+.gems span { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.csearch { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); margin-bottom: 6px; }
+.clist li { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+.clist .cn { font-weight: 600; font-size: 14px; }
+.clist .ca { font-size: 13px; color: var(--ink-2); }
+.clist .ct { font-size: 12px; color: var(--muted); }
+.hint { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+@media (max-width: 860px) {
+  .cgrid { grid-template-columns: 1fr; }
+  #cmap { height: 440px; }
+  .cpanel { max-height: none; }
+}
+@media (max-width: 860px) {
+  .tiles { grid-template-columns: repeat(2, 1fr); }
+  .map-grid, .two { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  #map text { display: none; }
+}
+@media (max-width: 420px) {
+  .tile .v { font-size: 24px; }
+  .rank li { grid-template-columns: 108px 1fr 58px; font-size: 13px; }
+  .card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--accent)"/><rect x="7" y="17" width="4" height="8" rx="1" fill="#fff"/><rect x="14" y="11" width="4" height="14" rx="1" fill="#fff"/><rect x="21" y="7" width="4" height="18" rx="1" fill="#fff"/></svg>
+      Austria Wirtschaft
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button">Dark mode</button>
+  </header>
+
+  <section class="hero">
+    <h1>Austria's economy, mapped</h1>
+    <p>Where Austria's companies are, from the whole country down to individual towns, and how the nine Bundesländer compare on output and income.</p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="block card" id="companies">
+    <h2>Where the companies are</h2>
+    <p class="sub">Active companies in the Austrian commercial register, counted by where they are registered. Zoom in to go from states to districts, municipalities, places and finally each company's address, or click any area.</p>
+    <div class="tiles ctiles" id="ctiles"></div>
+    <div class="clevels" id="clevels"></div>
+    <div class="cgrid">
+      <div class="cmapwrap"><div id="cmap" aria-label="Map of companies in Austria"></div>
+        <div class="legend" id="clegend"></div></div>
+      <aside class="cpanel" aria-live="polite">
+        <div class="ccrumbs" id="ccrumbs"></div>
+        <div id="chead"></div>
+        <div id="ccount" class="hint"></div>
+        <div id="cbody"></div>
+      </aside>
+    </div>
+    <p class="note">Source: justizonline (Firmenbuch) extract of active companies. Counts per area are based on postcode and place. Individual positions come from the official Austrian address register (© Österreichisches Adressregister, Stichtagsdaten vom 01.04.2026). Companies with a foreign or missing address are not mapped. Personal data of owners and managers is not shown.</p>
+  </section>
+
+  <section class="block card" id="regions">
+    <h2>Nine states, three measures</h2>
+    <p class="sub">Pick a measure, then click a state on the map or in the list to see its details.</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="map-grid">
+      <div>
+        <div id="map" aria-label="Map of Austrian federal states"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div>
+        <ul class="rank" id="rank"></ul>
+        <div class="detail" id="detail"></div>
+      </div>
+    </div>
+    <p class="note" id="mapNote"></p>
+  </section>
+
+  <section class="block card">
+    <h2>The data</h2>
+    <p class="sub">Every number on this page, in one table.</p>
+    <details class="table" open>
+      <summary>States, 2024</summary>
+      <div class="tbl-wrap" id="tblStates"></div>
+    </details>
+  </section>
+
+  <footer>
+    <strong>Sources</strong>
+    <ul id="sources"></ul>
+    <div>Gross regional product (BRP) is counted where people work, while income is counted where they live, so commuter regions such as Niederösterreich rank higher on income than on output.</div>
+    <div style="margin-top:12px">Built by <a href="https://rymbekova.github.io">Aigerim Rymbekova</a>.</div>
+  </footer>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+(function () {
+  const D = window.AW_DATA;
+  const AT = "Österreich";
+  const NS = "http://www.w3.org/2000/svg";
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const el = (tag, attrs = {}, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  const nf = new Intl.NumberFormat("en-GB");
+  const eur = v => "€" + nf.format(v);
+  const pct = v => v.toFixed(1) + "%";
+  const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v).toFixed(1) + "%";
+
+  // ---------- theme ----------
+  const root = document.documentElement;
+  const btn = document.getElementById("themeBtn");
+  const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  try { const s = localStorage.getItem("aw-theme"); if (s) root.dataset.theme = s; } catch (e) {}
+  const syncBtn = () => btn.textContent = isDark() ? "Light mode" : "Dark mode";
+  syncBtn();
+  btn.onclick = () => {
+    root.dataset.theme = isDark() ? "light" : "dark";
+    try { localStorage.setItem("aw-theme", root.dataset.theme); } catch (e) {}
+    syncBtn(); renderAll();
+  };
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { syncBtn(); renderAll(); });
+
+  // ---------- tooltip ----------
+  const tip = document.getElementById("tip");
+  function showTip(evt, title, rows) {
+    tip.innerHTML = `<div class="t">${title}</div>` + rows.map(([k, v]) => `<div class="r"><span>${k}</span><b>${v}</b></div>`).join("");
+    tip.style.opacity = 1;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    let x = evt.clientX + 14, y = evt.clientY + 14;
+    if (x + w > innerWidth - 8) x = evt.clientX - w - 14;
+    if (y + h > innerHeight - 8) y = evt.clientY - h - 14;
+    tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+  }
+  const hideTip = () => tip.style.opacity = 0;
+
+  // ---------- tiles ----------
+  const H = D.headline;
+  document.getElementById("tiles").innerHTML = [
+    ["Real GDP growth, 2025", sgn(H.gdpGrowth2025), "First growth after two years of recession"],
+    ["Regional GDP, 2024", "€494.1 bn", "All nine states combined"],
+    ["Jobs, 2024", nf.format(D.regional2024["Österreich"].jobs), "Up 0.6% on 2023"],
+    ["GDP per person, 2024", eur(H.brpPerCapita2024), "Nominal, national average"]
+  ].map(([k, v, n]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`).join("");
+
+  // ---------- indicators ----------
+  const IND = {
+    brp:    { label: "GDP per person", year: 2024, get: s => D.regional2024[s].brpPerCapita, fmt: eur, type: "seq",
+              note: "Gross regional product per inhabitant, current prices, 2024." },
+    income: { label: "Disposable income per person", year: 2024, get: s => D.regional2024[s].income, fmt: eur, type: "seq",
+              note: "Disposable income of private households per inhabitant, 2024. Measured where people live." },
+    growth: { label: "Real growth", year: 2024, get: s => D.regional2024[s].realGrowth, fmt: sgn, type: "div",
+              note: "Real change in gross regional product, 2024 vs 2023 (preliminary). Kärnten and Oberösterreich were hit hardest by the industrial recession." }
+  };
+  let ind = "brp";
+  let sel = "Wien";
+
+  const tabs = document.getElementById("tabs");
+  for (const k in IND) {
+    const b = document.createElement("button");
+    b.className = "tab"; b.type = "button"; b.setAttribute("role", "tab");
+    b.textContent = IND[k].label + " " + IND[k].year;
+    b.onclick = () => { ind = k; renderRegions(); };
+    b.dataset.k = k;
+    tabs.appendChild(b);
+  }
+
+  function colorFor(v, I) {
+    if (I.type === "div") {
+      if (v <= -2) return css("--d-neg2");
+      if (v < -0.5) return css("--d-neg1");
+      if (v <= 0.5) return css("--d-mid");
+      if (v < 2) return css("--d-pos1");
+      return css("--d-pos2");
+    }
+    const vals = D.states.map(I.get);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const i = Math.min(4, Math.floor(((v - lo) / (hi - lo || 1)) * 5));
+    return css(`--q${i + 1}`);
+  }
+  function legendHTML(I) {
+    if (I.type === "div") {
+      const c = ["--d-neg2","--d-neg1","--d-mid","--d-pos1","--d-pos2"].map(css);
+      return `<span>Shrank</span><span class="sw">${c.map(x => `<span style="background:${x}"></span>`).join("")}</span><span>Grew</span>
+              <span style="margin-left:6px;color:var(--muted)">≤−2 · −2 to −0.5 · ±0.5 · 0.5 to 2 · ≥2 %</span>`;
+    }
+    const vals = D.states.map(I.get);
+    const c = [1,2,3,4,5].map(i => css(`--q${i}`));
+    return `<span>${I.fmt(Math.min(...vals))}</span><span class="sw">${c.map(x => `<span style="background:${x}"></span>`).join("")}</span><span>${I.fmt(Math.max(...vals))}</span>`;
+  }
+
+  // ---------- map ----------
+  let geo = null;
+  const LAT0 = 47.6 * Math.PI / 180;
+  const W = 640;
+  let proj = null, Hh = 0;
+  function setupProj() {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    const walk = c => typeof c[0] === "number"
+      ? (minX = Math.min(minX, c[0]), maxX = Math.max(maxX, c[0]), minY = Math.min(minY, c[1]), maxY = Math.max(maxY, c[1]))
+      : c.forEach(walk);
+    geo.features.forEach(f => walk(f.geometry.coordinates));
+    const pad = 6;
+    const k = (W - 2 * pad) / ((maxX - minX) * Math.cos(LAT0));
+    Hh = Math.ceil((maxY - minY) * k + 2 * pad);
+    proj = ([lon, lat]) => [pad + (lon - minX) * Math.cos(LAT0) * k, pad + (maxY - lat) * k];
+  }
+  function pathD(geom) {
+    const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
+    return polys.map(p => p.map(ring => ring.map((c, i) => (i ? "L" : "M") + proj(c).map(n => n.toFixed(1)).join(",")).join("") + "Z").join("")).join("");
+  }
+  function centroid(geom) {
+    // area-weighted centroid of the largest polygon
+    const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
+    let best = null, bestA = 0;
+    polys.forEach(p => {
+      const r = p[0].map(proj); let a = 0, cx = 0, cy = 0;
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+        const f = r[j][0] * r[i][1] - r[i][0] * r[j][1];
+        a += f; cx += (r[j][0] + r[i][0]) * f; cy += (r[j][1] + r[i][1]) * f;
+      }
+      a /= 2;
+      if (Math.abs(a) > bestA) { bestA = Math.abs(a); best = [cx / (6 * a), cy / (6 * a)]; }
+    });
+    return best;
+  }
+  const LABEL_NUDGE = { "Wien": [26, -14], "Niederösterreich": [-10, 18], "Burgenland": [12, 0], "Vorarlberg": [0, 4] };
+  const SHORT = { "Niederösterreich": "Niederösterreich", "Oberösterreich": "Oberösterreich" };
+
+  function renderMap() {
+    const box = document.getElementById("map");
+    if (!geo) return;
+    const I = IND[ind];
+    box.innerHTML = "";
+    const svg = el("svg", { viewBox: `0 0 ${W} ${Hh}`, role: "img" }, box);
+    const labels = [];
+    geo.features.forEach(f => {
+      const s = f.properties.name, v = I.get(s);
+      const p = el("path", { d: pathD(f.geometry), fill: colorFor(v, I), "aria-label": `${s}: ${I.fmt(v)}` }, svg);
+      if (s === sel) p.classList.add("sel");
+      p.addEventListener("mousemove", e => showTip(e, s, [[I.label + " " + I.year, I.fmt(v)], ["Austria", I.fmt(I.get(AT))]]));
+      p.addEventListener("mouseleave", hideTip);
+      p.addEventListener("click", () => select(s));
+      labels.push([s, centroid(f.geometry), v]);
+    });
+    // selected outline on top
+    const sp = svg.querySelector("path.sel"); if (sp) svg.appendChild(sp);
+    labels.forEach(([s, c, v]) => {
+      const n = LABEL_NUDGE[s] || [0, 0];
+      const t = el("text", { x: c[0] + n[0], y: c[1] + n[1], "text-anchor": "middle" }, svg);
+      t.textContent = SHORT[s] || s;
+      const t2 = el("text", { x: c[0] + n[0], y: c[1] + n[1] + 14, "text-anchor": "middle", "font-weight": "600" }, svg);
+      t2.textContent = I.fmt(v);
+    });
+    document.getElementById("legend").innerHTML = legendHTML(I);
+  }
+
+  function renderRank() {
+    const I = IND[ind];
+    const rows = D.states.map(s => [s, I.get(s)]).sort((a, b) => b[1] - a[1]);
+    const atv = I.get(AT);
+    const list = document.getElementById("rank");
+    const vals = rows.map(r => r[1]).concat(atv);
+    const hi = Math.max(...vals.map(Math.abs));
+    const hasNeg = vals.some(v => v < 0) && I.type === "div";
+    list.innerHTML = "";
+    const all = rows.slice();
+    // insert Austria at its rank position
+    let idx = all.findIndex(r => r[1] < atv); if (idx < 0) idx = all.length;
+    all.splice(idx, 0, [AT, atv]);
+    all.forEach(([s, v]) => {
+      const li = document.createElement("li");
+      if (s === AT) li.className = "at"; else if (s === sel) li.className = "sel";
+      let bar;
+      if (hasNeg) {
+        const w = Math.abs(v) / hi * 50;
+        bar = `<span class="zero" style="left:50%"></span><span class="bar ${v < 0 ? "neg" : ""}" style="${v < 0 ? `left:${50 - w}%` : "left:50%"};width:${w}%;background:${s === AT ? css("--ref") : colorFor(v, I)}"></span>`;
+      } else {
+        const lo = 0;
+        bar = `<span class="bar" style="left:0;width:${(v - lo) / (hi - lo) * 100}%;background:${s === AT ? css("--ref") : css("--s1")};opacity:${s === sel || s === AT ? 1 : .55}"></span>`;
+      }
+      li.innerHTML = `<span>${s}</span><span class="bar-track">${bar}</span><span class="val">${I.fmt(v)}</span>`;
+      if (s !== AT) li.onclick = () => select(s);
+      list.appendChild(li);
+    });
+  }
+
+  function renderDetail() {
+    const r = D.regional2024[sel];
+    const rank = (get, desc = true) => {
+      const sorted = D.states.slice().sort((a, b) => desc ? get(b) - get(a) : get(a) - get(b));
+      return sorted.indexOf(sel) + 1;
+    };
+    document.getElementById("detail").innerHTML = `<strong>${sel}</strong>
+      <dl>
+        <dt>GDP per person 2024</dt><dd>${eur(r.brpPerCapita)} <span style="color:var(--muted)">#${rank(s => D.regional2024[s].brpPerCapita)}</span></dd>
+        <dt>Disposable income per person 2024</dt><dd>${eur(r.income)} <span style="color:var(--muted)">#${rank(s => D.regional2024[s].income)}</span></dd>
+        <dt>Real growth 2024</dt><dd>${sgn(r.realGrowth)}</dd>
+        <dt>Jobs 2024</dt><dd>${nf.format(r.jobs)}</dd>
+        <dt>Regional GDP 2024</dt><dd>€${(r.brp / 1000).toFixed(1)} bn</dd>
+      </dl>`;
+  }
+
+  function renderRegions() {
+    [...tabs.children].forEach(b => b.setAttribute("aria-selected", b.dataset.k === ind));
+    document.getElementById("mapNote").textContent = IND[ind].note;
+    renderMap(); renderRank(); renderDetail();
+  }
+
+  function select(s) {
+    sel = s;
+    renderRegions();
+  }
+
+  // ---------- tables ----------
+  function renderTables() {
+    const rows = [AT].concat(D.states).map(s => {
+      const r = D.regional2024[s];
+      return `<tr><td>${s === AT ? "<b>Austria</b>" : s}</td><td>${eur(r.brpPerCapita)}</td><td>${eur(r.income)}</td><td>${sgn(r.realGrowth)}</td><td>${nf.format(r.jobs)}</td></tr>`;
+    }).join("");
+    document.getElementById("tblStates").innerHTML = `<table><thead><tr><th>State</th><th>GDP / person 2024</th><th>Income / person 2024</th><th>Real growth 2024</th><th>Jobs 2024</th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById("sources").innerHTML = D.sources.map(s => `<li><a href="${s.url}" rel="noopener">${s.label}</a></li>`).join("");
+  }
+
+  function renderAll() { renderRegions(); }
+
+  renderTables();
+  renderRegions();
+  fetch("laender.json").then(r => r.json()).then(g => { geo = g; setupProj(); renderMap(); })
+    .catch(() => { document.getElementById("map").innerHTML = '<p class="note">The map could not be loaded.</p>'; });
+})();
+</script>
+<script src="companies.js"></script>
+</body>
+</html>
