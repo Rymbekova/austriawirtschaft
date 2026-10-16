@@ -18,7 +18,7 @@ apt-get install -y nginx certbot python3-certbot-nginx
 
 echo "==> Copying site files to ${WEBROOT}"
 mkdir -p "$WEBROOT"
-cp -r "$HERE/index.html" "$HERE/data.js" "$HERE/companies.js" "$HERE/laender.json" "$HERE/vendor" "$HERE/data" "$WEBROOT/"
+cp -r "$HERE/index.html" "$HERE/companies.js" "$HERE/laender.json" "$HERE/vendor" "$HERE/data" "$WEBROOT/"
 chown -R www-data:www-data "$WEBROOT"
 
 echo "==> Configuring nginx"

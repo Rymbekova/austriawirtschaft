@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Austria Wirtschaft</title>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=202610161757">
-<meta name="description" content="Austria's economy by federal state: GDP per person, income and growth, from official statistics.">
+<meta name="description" content="Active Austrian companies mapped by state, district, municipality and address.">
 <meta property="og:title" content="Austria Wirtschaft">
-<meta property="og:description" content="Austria's economy by federal state, visualised from official statistics.">
+<meta property="og:description" content="Active Austrian companies mapped by state, district, municipality and address.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23256abf'/%3E%3Crect x='7' y='17' width='4' height='8' rx='1' fill='white'/%3E%3Crect x='14' y='11' width='4' height='14' rx='1' fill='white'/%3E%3Crect x='21' y='7' width='4' height='18' rx='1' fill='white'/%3E%3C/svg%3E">
 <style>
 :root {
@@ -218,14 +218,12 @@ footer li { margin: 3px 0; }
   </header>
 
   <section class="hero">
-    <h1>Austria's economy, mapped</h1>
-    <p>Where Austria's companies are, from the whole country down to individual towns, and how the nine Bundesländer compare on output and income.</p>
-    <div class="tiles" id="tiles"></div>
+    <h1>Where Austria's companies are</h1>
+    <p>Every active company in the justizonline commercial register extract, mapped from the whole country down to its street address.</p>
   </section>
 
   <section class="block card" id="companies">
-    <h2>Where the companies are</h2>
-    <p class="sub">Active companies in the Austrian commercial register, counted by where they are registered. Zoom in to go from states to districts, municipalities, places and finally each company's address, or click any area.</p>
+    <p class="sub" style="margin-bottom:16px">Zoom in to go from states to districts, municipalities, places and finally each company's address, or click any area.</p>
     <div class="tiles ctiles" id="ctiles"></div>
     <div class="clevels" id="clevels"></div>
     <div class="cgrid">
@@ -238,284 +236,39 @@ footer li { margin: 3px 0; }
         <div id="cbody"></div>
       </aside>
     </div>
-    <p class="note">Source: justizonline (Firmenbuch) extract of active companies. Counts per area are based on postcode and place. Individual positions come from the official Austrian address register (© Österreichisches Adressregister, Stichtagsdaten vom 01.04.2026). Companies with a foreign or missing address are not mapped. Personal data of owners and managers is not shown.</p>
-  </section>
-
-  <section class="block card" id="regions">
-    <h2>Nine states, three measures</h2>
-    <p class="sub">Pick a measure, then click a state on the map or in the list to see its details.</p>
-    <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="map-grid">
-      <div>
-        <div id="map" aria-label="Map of Austrian federal states"></div>
-        <div class="legend" id="legend"></div>
-      </div>
-      <div>
-        <ul class="rank" id="rank"></ul>
-        <div class="detail" id="detail"></div>
-      </div>
-    </div>
-    <p class="note" id="mapNote"></p>
-  </section>
-
-  <section class="block card">
-    <h2>The data</h2>
-    <p class="sub">Every number on this page, in one table.</p>
-    <details class="table" open>
-      <summary>States, 2024</summary>
-      <div class="tbl-wrap" id="tblStates"></div>
-    </details>
+    <p class="note">Companies with a foreign or missing address are not mapped. Personal data of owners and managers is not shown.</p>
   </section>
 
   <footer>
-    <strong>Sources</strong>
-    <ul id="sources"></ul>
-    <div>Gross regional product (BRP) is counted where people work, while income is counted where they live, so commuter regions such as Niederösterreich rank higher on income than on output.</div>
+    <strong>Data</strong>
+    <ul>
+      <li>Companies: justizonline (Firmenbuch) extract of active companies.</li>
+    </ul>
+    <strong>Map credits</strong>
+    <ul>
+      <li>Company positions: <a href="https://www.bev.gv.at/Services/Produkte/Adressregister.html" rel="noopener">© Österreichisches Adressregister, Stichtagsdaten vom 01.04.2026</a> (CC BY 4.0)</li>
+      <li>Boundaries: <a href="https://github.com/ginseng666/GeoJSON-TopoJSON-Austria" rel="noopener">GeoJSON-TopoJSON-Austria</a> · Postcode locations: <a href="https://github.com/zauberware/postal-codes-json-xml-csv" rel="noopener">GeoNames</a> · Background: © OpenStreetMap contributors</li>
+    </ul>
     <div style="margin-top:12px">Built by <a href="https://rymbekova.github.io">Aigerim Rymbekova</a>.</div>
   </footer>
 </div>
 <div id="tip" role="status" aria-live="polite"></div>
 
-<script src="data.js?v=202610161757"></script>
-<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/leaflet/leaflet.js?v=202610161757"></script>
 <script>
 (function () {
-  const D = window.AW_DATA;
-  const AT = "Österreich";
-  const NS = "http://www.w3.org/2000/svg";
-  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const el = (tag, attrs = {}, parent) => {
-    const e = document.createElementNS(NS, tag);
-    for (const k in attrs) e.setAttribute(k, attrs[k]);
-    if (parent) parent.appendChild(e);
-    return e;
-  };
-  const nf = new Intl.NumberFormat("en-GB");
-  const eur = v => "€" + nf.format(v);
-  const pct = v => v.toFixed(1) + "%";
-  const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v).toFixed(1) + "%";
-
-  // ---------- theme ----------
   const root = document.documentElement;
   const btn = document.getElementById("themeBtn");
   const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
   try { const s = localStorage.getItem("aw-theme"); if (s) root.dataset.theme = s; } catch (e) {}
   const syncBtn = () => btn.textContent = isDark() ? "Light mode" : "Dark mode";
   syncBtn();
-  btn.onclick = () => {
+  btn.addEventListener("click", () => {
     root.dataset.theme = isDark() ? "light" : "dark";
     try { localStorage.setItem("aw-theme", root.dataset.theme); } catch (e) {}
-    syncBtn(); renderAll();
-  };
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { syncBtn(); renderAll(); });
-
-  // ---------- tooltip ----------
-  const tip = document.getElementById("tip");
-  function showTip(evt, title, rows) {
-    tip.innerHTML = `<div class="t">${title}</div>` + rows.map(([k, v]) => `<div class="r"><span>${k}</span><b>${v}</b></div>`).join("");
-    tip.style.opacity = 1;
-    const w = tip.offsetWidth, h = tip.offsetHeight;
-    let x = evt.clientX + 14, y = evt.clientY + 14;
-    if (x + w > innerWidth - 8) x = evt.clientX - w - 14;
-    if (y + h > innerHeight - 8) y = evt.clientY - h - 14;
-    tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
-  }
-  const hideTip = () => tip.style.opacity = 0;
-
-  // ---------- tiles ----------
-  const H = D.headline;
-  document.getElementById("tiles").innerHTML = [
-    ["Real GDP growth, 2025", sgn(H.gdpGrowth2025), "First growth after two years of recession"],
-    ["Regional GDP, 2024", "€494.1 bn", "All nine states combined"],
-    ["Jobs, 2024", nf.format(D.regional2024["Österreich"].jobs), "Up 0.6% on 2023"],
-    ["GDP per person, 2024", eur(H.brpPerCapita2024), "Nominal, national average"]
-  ].map(([k, v, n]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${n}</div></div>`).join("");
-
-  // ---------- indicators ----------
-  const IND = {
-    brp:    { label: "GDP per person", year: 2024, get: s => D.regional2024[s].brpPerCapita, fmt: eur, type: "seq",
-              note: "Gross regional product per inhabitant, current prices, 2024." },
-    income: { label: "Disposable income per person", year: 2024, get: s => D.regional2024[s].income, fmt: eur, type: "seq",
-              note: "Disposable income of private households per inhabitant, 2024. Measured where people live." },
-    growth: { label: "Real growth", year: 2024, get: s => D.regional2024[s].realGrowth, fmt: sgn, type: "div",
-              note: "Real change in gross regional product, 2024 vs 2023 (preliminary). Kärnten and Oberösterreich were hit hardest by the industrial recession." }
-  };
-  let ind = "brp";
-  let sel = "Wien";
-
-  const tabs = document.getElementById("tabs");
-  for (const k in IND) {
-    const b = document.createElement("button");
-    b.className = "tab"; b.type = "button"; b.setAttribute("role", "tab");
-    b.textContent = IND[k].label + " " + IND[k].year;
-    b.onclick = () => { ind = k; renderRegions(); };
-    b.dataset.k = k;
-    tabs.appendChild(b);
-  }
-
-  function colorFor(v, I) {
-    if (I.type === "div") {
-      if (v <= -2) return css("--d-neg2");
-      if (v < -0.5) return css("--d-neg1");
-      if (v <= 0.5) return css("--d-mid");
-      if (v < 2) return css("--d-pos1");
-      return css("--d-pos2");
-    }
-    const vals = D.states.map(I.get);
-    const lo = Math.min(...vals), hi = Math.max(...vals);
-    const i = Math.min(4, Math.floor(((v - lo) / (hi - lo || 1)) * 5));
-    return css(`--q${i + 1}`);
-  }
-  function legendHTML(I) {
-    if (I.type === "div") {
-      const c = ["--d-neg2","--d-neg1","--d-mid","--d-pos1","--d-pos2"].map(css);
-      return `<span>Shrank</span><span class="sw">${c.map(x => `<span style="background:${x}"></span>`).join("")}</span><span>Grew</span>
-              <span style="margin-left:6px;color:var(--muted)">≤−2 · −2 to −0.5 · ±0.5 · 0.5 to 2 · ≥2 %</span>`;
-    }
-    const vals = D.states.map(I.get);
-    const c = [1,2,3,4,5].map(i => css(`--q${i}`));
-    return `<span>${I.fmt(Math.min(...vals))}</span><span class="sw">${c.map(x => `<span style="background:${x}"></span>`).join("")}</span><span>${I.fmt(Math.max(...vals))}</span>`;
-  }
-
-  // ---------- map ----------
-  let geo = null;
-  const LAT0 = 47.6 * Math.PI / 180;
-  const W = 640;
-  let proj = null, Hh = 0;
-  function setupProj() {
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    const walk = c => typeof c[0] === "number"
-      ? (minX = Math.min(minX, c[0]), maxX = Math.max(maxX, c[0]), minY = Math.min(minY, c[1]), maxY = Math.max(maxY, c[1]))
-      : c.forEach(walk);
-    geo.features.forEach(f => walk(f.geometry.coordinates));
-    const pad = 6;
-    const k = (W - 2 * pad) / ((maxX - minX) * Math.cos(LAT0));
-    Hh = Math.ceil((maxY - minY) * k + 2 * pad);
-    proj = ([lon, lat]) => [pad + (lon - minX) * Math.cos(LAT0) * k, pad + (maxY - lat) * k];
-  }
-  function pathD(geom) {
-    const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
-    return polys.map(p => p.map(ring => ring.map((c, i) => (i ? "L" : "M") + proj(c).map(n => n.toFixed(1)).join(",")).join("") + "Z").join("")).join("");
-  }
-  function centroid(geom) {
-    // area-weighted centroid of the largest polygon
-    const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
-    let best = null, bestA = 0;
-    polys.forEach(p => {
-      const r = p[0].map(proj); let a = 0, cx = 0, cy = 0;
-      for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
-        const f = r[j][0] * r[i][1] - r[i][0] * r[j][1];
-        a += f; cx += (r[j][0] + r[i][0]) * f; cy += (r[j][1] + r[i][1]) * f;
-      }
-      a /= 2;
-      if (Math.abs(a) > bestA) { bestA = Math.abs(a); best = [cx / (6 * a), cy / (6 * a)]; }
-    });
-    return best;
-  }
-  const LABEL_NUDGE = { "Wien": [26, -14], "Niederösterreich": [-10, 18], "Burgenland": [12, 0], "Vorarlberg": [0, 4] };
-  const SHORT = { "Niederösterreich": "Niederösterreich", "Oberösterreich": "Oberösterreich" };
-
-  function renderMap() {
-    const box = document.getElementById("map");
-    if (!geo) return;
-    const I = IND[ind];
-    box.innerHTML = "";
-    const svg = el("svg", { viewBox: `0 0 ${W} ${Hh}`, role: "img" }, box);
-    const labels = [];
-    geo.features.forEach(f => {
-      const s = f.properties.name, v = I.get(s);
-      const p = el("path", { d: pathD(f.geometry), fill: colorFor(v, I), "aria-label": `${s}: ${I.fmt(v)}` }, svg);
-      if (s === sel) p.classList.add("sel");
-      p.addEventListener("mousemove", e => showTip(e, s, [[I.label + " " + I.year, I.fmt(v)], ["Austria", I.fmt(I.get(AT))]]));
-      p.addEventListener("mouseleave", hideTip);
-      p.addEventListener("click", () => select(s));
-      labels.push([s, centroid(f.geometry), v]);
-    });
-    // selected outline on top
-    const sp = svg.querySelector("path.sel"); if (sp) svg.appendChild(sp);
-    labels.forEach(([s, c, v]) => {
-      const n = LABEL_NUDGE[s] || [0, 0];
-      const t = el("text", { x: c[0] + n[0], y: c[1] + n[1], "text-anchor": "middle" }, svg);
-      t.textContent = SHORT[s] || s;
-      const t2 = el("text", { x: c[0] + n[0], y: c[1] + n[1] + 14, "text-anchor": "middle", "font-weight": "600" }, svg);
-      t2.textContent = I.fmt(v);
-    });
-    document.getElementById("legend").innerHTML = legendHTML(I);
-  }
-
-  function renderRank() {
-    const I = IND[ind];
-    const rows = D.states.map(s => [s, I.get(s)]).sort((a, b) => b[1] - a[1]);
-    const atv = I.get(AT);
-    const list = document.getElementById("rank");
-    const vals = rows.map(r => r[1]).concat(atv);
-    const hi = Math.max(...vals.map(Math.abs));
-    const hasNeg = vals.some(v => v < 0) && I.type === "div";
-    list.innerHTML = "";
-    const all = rows.slice();
-    // insert Austria at its rank position
-    let idx = all.findIndex(r => r[1] < atv); if (idx < 0) idx = all.length;
-    all.splice(idx, 0, [AT, atv]);
-    all.forEach(([s, v]) => {
-      const li = document.createElement("li");
-      if (s === AT) li.className = "at"; else if (s === sel) li.className = "sel";
-      let bar;
-      if (hasNeg) {
-        const w = Math.abs(v) / hi * 50;
-        bar = `<span class="zero" style="left:50%"></span><span class="bar ${v < 0 ? "neg" : ""}" style="${v < 0 ? `left:${50 - w}%` : "left:50%"};width:${w}%;background:${s === AT ? css("--ref") : colorFor(v, I)}"></span>`;
-      } else {
-        const lo = 0;
-        bar = `<span class="bar" style="left:0;width:${(v - lo) / (hi - lo) * 100}%;background:${s === AT ? css("--ref") : css("--s1")};opacity:${s === sel || s === AT ? 1 : .55}"></span>`;
-      }
-      li.innerHTML = `<span>${s}</span><span class="bar-track">${bar}</span><span class="val">${I.fmt(v)}</span>`;
-      if (s !== AT) li.onclick = () => select(s);
-      list.appendChild(li);
-    });
-  }
-
-  function renderDetail() {
-    const r = D.regional2024[sel];
-    const rank = (get, desc = true) => {
-      const sorted = D.states.slice().sort((a, b) => desc ? get(b) - get(a) : get(a) - get(b));
-      return sorted.indexOf(sel) + 1;
-    };
-    document.getElementById("detail").innerHTML = `<strong>${sel}</strong>
-      <dl>
-        <dt>GDP per person 2024</dt><dd>${eur(r.brpPerCapita)} <span style="color:var(--muted)">#${rank(s => D.regional2024[s].brpPerCapita)}</span></dd>
-        <dt>Disposable income per person 2024</dt><dd>${eur(r.income)} <span style="color:var(--muted)">#${rank(s => D.regional2024[s].income)}</span></dd>
-        <dt>Real growth 2024</dt><dd>${sgn(r.realGrowth)}</dd>
-        <dt>Jobs 2024</dt><dd>${nf.format(r.jobs)}</dd>
-        <dt>Regional GDP 2024</dt><dd>€${(r.brp / 1000).toFixed(1)} bn</dd>
-      </dl>`;
-  }
-
-  function renderRegions() {
-    [...tabs.children].forEach(b => b.setAttribute("aria-selected", b.dataset.k === ind));
-    document.getElementById("mapNote").textContent = IND[ind].note;
-    renderMap(); renderRank(); renderDetail();
-  }
-
-  function select(s) {
-    sel = s;
-    renderRegions();
-  }
-
-  // ---------- tables ----------
-  function renderTables() {
-    const rows = [AT].concat(D.states).map(s => {
-      const r = D.regional2024[s];
-      return `<tr><td>${s === AT ? "<b>Austria</b>" : s}</td><td>${eur(r.brpPerCapita)}</td><td>${eur(r.income)}</td><td>${sgn(r.realGrowth)}</td><td>${nf.format(r.jobs)}</td></tr>`;
-    }).join("");
-    document.getElementById("tblStates").innerHTML = `<table><thead><tr><th>State</th><th>GDP / person 2024</th><th>Income / person 2024</th><th>Real growth 2024</th><th>Jobs 2024</th></tr></thead><tbody>${rows}</tbody></table>`;
-    document.getElementById("sources").innerHTML = D.sources.map(s => `<li><a href="${s.url}" rel="noopener">${s.label}</a></li>`).join("");
-  }
-
-  function renderAll() { renderRegions(); }
-
-  renderTables();
-  renderRegions();
-  fetch("laender.json").then(r => r.json()).then(g => { geo = g; setupProj(); renderMap(); })
-    .catch(() => { document.getElementById("map").innerHTML = '<p class="note">The map could not be loaded.</p>'; });
+    syncBtn();
+  });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncBtn);
 })();
 </script>
 <script src="companies.js?v=202610161757"></script>
