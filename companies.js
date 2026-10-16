@@ -1,6 +1,9 @@
 // Companies map: counts per Bundesland → Bezirk → Gemeinde → place, drilling down as you zoom.
 (function () {
   const BASE = "data/companies/";
+  // version from this script's ?v= so data files are re-fetched after every update
+  const VER = (document.currentScript && new URL(document.currentScript.src).searchParams.get("v")) || "";
+  const q = VER ? "?v=" + VER : "";
   const LAND_CODE = { "Burgenland": "1", "Kärnten": "2", "Niederösterreich": "3", "Oberösterreich": "4", "Salzburg": "5",
                       "Steiermark": "6", "Tirol": "7", "Vorarlberg": "8", "Wien": "9" };
   const LAND_LABEL = { "Niederösterreich": [48.42, 15.45], "Wien": [48.21, 16.37], "Burgenland": [47.55, 16.45] };
@@ -17,7 +20,7 @@
   const el = id => document.getElementById(id);
   let S, laender, bezirke, gemeinden, places;
   const companyCache = {};
-  const loadCompanies = bez => companyCache[bez] || (companyCache[bez] = fetch(`${BASE}c/${bez}.json`).then(r => r.json()));
+  const loadCompanies = bez => companyCache[bez] || (companyCache[bez] = fetch(`${BASE}c/${bez}.json${q}`).then(r => r.json()));
 
   // ---------- map ----------
   const map = L.map("cmap", { zoomSnap: 0.25, minZoom: 5, maxZoom: 18, preferCanvas: false,
@@ -399,11 +402,11 @@
 
   // ---------- boot ----------
   Promise.all([
-    fetch(BASE + "summary.json").then(r => r.json()),
-    fetch("laender.json").then(r => r.json()),
-    fetch(BASE + "bezirke.json").then(r => r.json()),
-    fetch(BASE + "gemeinden.json").then(r => r.json()),
-    fetch(BASE + "places.json").then(r => r.json())
+    fetch(BASE + "summary.json" + q).then(r => r.json()),
+    fetch("laender.json" + q).then(r => r.json()),
+    fetch(BASE + "bezirke.json" + q).then(r => r.json()),
+    fetch(BASE + "gemeinden.json" + q).then(r => r.json()),
+    fetch(BASE + "places.json" + q).then(r => r.json())
   ]).then(([s, l, b, g, p]) => {
     S = s; laender = l; bezirke = b; gemeinden = g; places = p;
     renderTiles(); panelAustria();
